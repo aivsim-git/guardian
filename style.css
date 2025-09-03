@@ -1,0 +1,99 @@
+/* styles.css — polished UI for Guardian Alert web app */
+:root{
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --max-width: 980px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, #f6f9ff 0%, var(--bg) 100%);
+  color:#0f172a;
+  -webkit-font-smoothing:antialiased;
+}
+
+.container{
+  max-width:var(--max-width);
+  margin:30px auto;
+  padding:20px;
+}
+
+/* Top header */
+.top{display:flex;align-items:center;gap:16px;justify-content:space-between;margin-bottom:8px}
+.top h1{margin:0;font-size:1.6rem}
+.brand{font-size:1.8rem}
+
+/* Card */
+.card{
+  background:var(--card);
+  padding:18px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:18px;
+}
+
+/* Forms */
+.form label, .contacts label{display:block;margin:10px 0;font-size:14px}
+input{
+  width:100%;
+  padding:11px 12px;
+  margin-top:8px;
+  border-radius:10px;
+  border:1px solid #e6eef7;
+  font-size:15px;
+  background:#fff;
+}
+input:focus{outline:none;box-shadow:0 0 0 5px rgba(37,99,235,0.08);border-color:var(--accent)}
+
+/* Buttons */
+.row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.row.right{justify-content:flex-end}
+.btn{
+  border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;background:#f3f4f6;color:inherit;
+  display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+}
+.btn.primary{background:var(--accent);color:white}
+.btn.big{width:100%;height:82px;font-size:1.05rem;border-radius:14px}
+.btn:active{transform:translateY(1px)}
+.btn:focus{outline:3px solid rgba(37,99,235,0.18);outline-offset:2px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* Button colors */
+.blue{background:#2563eb;color:white}
+.red{background:#ef4444;color:white}
+.yellow{background:#f59e0b;color:#071233}
+.danger{background:var(--danger);color:white}
+
+/* Layout */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.center{text-align:center}
+.status{margin-top:12px;padding:12px;border-radius:10px;background:#f8fafc;color:#0f172a}
+
+/* Links & small text */
+.muted{color:var(--muted)}
+.link{margin-left:auto;color:var(--accent);text-decoration:none;font-weight:600}
+.small{font-size:13px;color:var(--muted)}
+
+/* Modal */
+.modal{position:fixed;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.4);z-index:9999}
+.modal-card{width:min(720px,92%);background:white;padding:18px;border-radius:12px;box-shadow:0 20px 60px rgba(2,6,23,0.3)}
+.modal textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef7;font-family:inherit}
+
+/* Hidden helper */
+.hidden{display:none !important}
+
+/* Responsive */
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .btn.big{height:72px}
+  .top{flex-direction:row}
+}

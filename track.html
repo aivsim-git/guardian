@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Live Track — Guardian Alert</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    html,body,#map { height:100%; margin:0; padding:0; }
+    #overlay { position:absolute; top:10px; left:10px; z-index:1000; background:rgba(255,255,255,0.95); padding:10px; border-radius:6px; font-family:sans-serif; box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+    #footer { position:absolute; bottom:10px; left:10px; z-index:1000; background:rgba(255,255,255,0.9); padding:6px 10px; border-radius:6px; font-size:13px;}
+  </style>
+</head>
+<body>
+  <div id="overlay">Loading...</div>
+  <div id="map"></div>
+  <div id="footer">Updates every 6s — origin device must keep the tab open.</div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Paste the same firebaseConfig object here (from index.html)
+    const firebaseConfig = {
+      apiKey: "REPLACE_WITH_YOUR_API_KEY",
+      authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://REPLACE_WITH_YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "REPLACE_WITH_YOUR_PROJECT",
+      storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    let firebaseAvailable = false;
+    try {
+      if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL) {
+        firebase.initializeApp(firebaseConfig);
+        firebaseAvailable = !!(firebase && firebase.database);
+      } else {
+        document.getElementById('overlay').textContent = 'Firebase config missing — live map unavailable until config is added.';
+      }
+    } catch(e) {
+      console.warn('Firebase init failed', e);
+      document.getElementById('overlay').textContent = 'Firebase init failed — check console.';
+    }
+
+    const db = firebaseAvailable ? firebase.database() : null;
+
+    function getSid(){ const p = new URLSearchParams(window.location.search); return p.get('sid'); }
+    const sid = getSid();
+    const overlay = document.getElementById('overlay');
+
+    const map = L.map('map').setView([20,0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    let marker = null;
+
+    if (!sid){
+      overlay.textContent = 'No session id provided. Open track.html?sid=YOUR_SESSION_ID';
+    } else if (!firebaseAvailable) {
+      overlay.textContent = 'Firebase not configured. Please add your firebaseConfig in this file.';
+    } else {
+      overlay.innerHTML = `Listening to session: <strong>${sid}</strong><br>Waiting for updates...`;
+      async function fetchLatest(){
+        try {
+          const snap = await db.ref(`tracks/${sid}/latest`).get();
+          if (snap.exists()){
+            const d = snap.val();
+            overlay.innerHTML = `Name: ${d.name || 'unknown'}<br>Time: ${d.ts || ''}`;
+            const lat = d.lat, lon = d.lon;
+            if (!marker){
+              marker = L.marker([lat, lon]).addTo(map);
+              map.setView([lat, lon], 16);
+            } else {
+              marker.setLatLng([lat, lon]);
+            }
+          } else {
+            overlay.innerHTML = `No position yet for session <strong>${sid}</strong>`;
+          }
+        } catch(e){
+          console.warn('fetchLatest error', e);
+          overlay.innerHTML = 'Error reading track — check Firebase rules and console.';
+        }
+      }
+      fetchLatest();
+      setInterval(fetchLatest, 6000);
+    }
+  </script>
+</body>
+</html>

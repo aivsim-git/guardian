@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Debug UI</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f6f8fb;color:#0f172a;padding:20px}
+    .card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.06);max-width:800px}
+    button{padding:10px 14px;border-radius:8px;border:none;background:#2563eb;color:#fff;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Debug Page</h2>
+    <p>If you see this, the browser can render HTML/CSS. Click the button to test JavaScript.</p>
+    <button id="btn">Click me</button>
+    <pre id="out"></pre>
+  </div>
+
+  <script>
+    document.getElementById('btn').addEventListener('click', () => {
+      const out = document.getElementById('out');
+      out.textContent = 'JS works. location.href=' + location.href + '\\nUser agent: ' + navigator.userAgent;
+      console.log('Debug click OK');
+    });
+  </script>
+</body>
+</html>

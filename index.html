@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Guardian Alert</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Optional Firebase (Realtime DB) -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
+
+  <!-- QR lib -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <!-- === Paste your Firebase config here to enable live-map feature (optional) ===
+       Example:
+    const firebaseConfig = {
+      apiKey: "...",
+      authDomain: "...",
+      databaseURL: "...",
+      projectId: "...",
+      storageBucket: "...",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+  -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "REPLACE_WITH_YOUR_API_KEY",
+      authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://REPLACE_WITH_YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "REPLACE_WITH_YOUR_PROJECT",
+      storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+  </script>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand-wrap">
+        <div class="logo">🛡️</div>
+        <div>
+          <h1 class="brand">Guardian Alert</h1>
+          <div class="subtitle">Call + WhatsApp alerts • Live location</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggle" class="icon-btn" title="Toggle theme">🌙</button>
+        <button id="settingsBtn" class="btn small">Settings</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card welcome">
+        <div class="welcome-left">
+          <h2>Quick emergency actions</h2>
+          <p class="muted">Save numbers in Settings. Tap a color to call and send a WhatsApp message containing your live location.</p>
+        </div>
+
+        <div class="welcome-right">
+          <label for="userName">Your name (one-time)</label>
+          <input id="userName" placeholder="e.g. Aisha" />
+          <div class="row" style="margin-top:8px;">
+            <button id="saveName" class="btn primary">Save</button>
+          </div>
+          <div class="muted small" style="margin-top:10px;">Name is stored only on this device.</div>
+        </div>
+      </section>
+
+      <section class="card center">
+        <p class="muted">Tap a button: the app requests location, dials the saved number, then opens WhatsApp with a message containing your coordinates, Google Maps link, OpenStreetMap link and a live-map link (if enabled).</p>
+
+        <div class="grid">
+          <button id="btnPolice" class="btn big blue">POLICE</button>
+          <button id="btnFire" class="btn big red">FIRE</button>
+          <button id="btnFamily" class="btn big yellow">FAMILY</button>
+        </div>
+
+        <div id="status" class="status">Status: <span id="statusText">Ready</span></div>
+
+        <div class="controls" style="margin-top:12px;">
+          <button id="trackToggle" class="track-toggle start">Start Live Tracking</button>
+          <button id="openMap" class="btn" disabled>Open Live Map</button>
+          <button id="shareMap" class="btn" disabled>Share Live Map</button>
+        </div>
+      </section>
+
+      <section class="card foot muted small">
+        <strong>Note:</strong> WhatsApp deep-links work on mobile devices with WhatsApp installed. Numbers should be international format (e.g. +11234567890).
+      </section>
+    </main>
+
+    <footer class="app-footer muted small">Guardian Alert — Demo. Use responsibly.</footer>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-card">
+      <h3>Settings & Contacts</h3>
+      <label>Police number (E.164)
+        <input id="inputPolice" placeholder="+1..." inputmode="tel" />
+      </label>
+      <label>Fire department number
+        <input id="inputFire" placeholder="+1..." inputmode="tel" />
+      </label>
+      <label>Family / trusted contact
+        <input id="inputFamily" placeholder="+1..." inputmode="tel" />
+      </label>
+
+      <div class="row space" style="margin-top:12px;">
+        <button id="saveContacts" class="btn primary">Save</button>
+        <button id="testSms" class="btn">Send Test</button>
+        <a href="privacy.html" class="link small" target="_blank">Privacy</a>
+      </div>
+
+      <div class="row right" style="margin-top:12px;">
+        <button id="closeSettings" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERMISSION MODAL -->
+  <div id="permModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-card">
+      <h3 id="permTitle">Enable Location</h3>
+      <p id="permMsg">This app needs location to send accurate emergency alerts. Please allow Location for this site.</p>
+      <div class="row" style="margin-top:12px;">
+        <button id="permRetry" class="btn primary">Retry</button>
+        <button id="permOpenSettings" class="btn">Open Settings</button>
+        <button id="permCancel" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div id="confirmModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-card">
+      <h3>Confirm</h3>
+      <p id="confirmText">Proceed?</p>
+      <div class="row" style="margin-top:12px;">
+        <button id="confirmSend" class="btn danger">Send</button>
+        <button id="confirmCancel" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR / SHARE MODAL -->
+  <div id="qrModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-card">
+      <h3>Share Live Map</h3>
+      <div id="qrcode"></div>
+      <div class="row" style="margin-top:10px;">
+        <button id="copyLink" class="btn">Copy Link</button>
+        <button id="closeQr" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- Main script -->
+  <script src="app.js"></script>
+</body>
+</html>
